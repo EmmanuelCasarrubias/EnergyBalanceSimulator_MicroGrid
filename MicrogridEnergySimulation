@@ -1,0 +1,34 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Simulate microgrid data
+np.random.seed(0)
+time = np.arange(0, 24, 0.5)  # 24 hours, in half-hour intervals
+generation = np.abs(np.sin(time) * 20 + np.random.normal(0, 3, len(time)))  # Simulate energy generation
+consumption = np.abs(np.cos(time) * 15 + np.random.normal(0, 2, len(time)))  # Simulate energy consumption
+battery_state = np.clip(np.cumsum(generation - consumption), 0, 50)          # Simulate battery state, max 50 kWh
+
+# Create plots
+fig, axs = plt.subplots(3, 1, figsize=(10, 8))
+
+# Energy generation plot
+axs[0].plot(time, generation, label='Generation (kWh)', color='green')
+axs[0].set_title('Energy Generation')
+axs[0].set_ylabel('Energy (kWh)')
+axs[0].legend()
+
+# Energy consumption plot
+axs[1].plot(time, consumption, label='Consumption (kWh)', color='red')
+axs[1].set_title('Energy Consumption')
+axs[1].set_ylabel('Energy (kWh)')
+axs[1].legend()
+
+# Battery state plot
+axs[2].plot(time, battery_state, label='Battery State (kWh)', color='blue')
+axs[2].set_title('Battery State')
+axs[2].set_xlabel('Time (hours)')
+axs[2].set_ylabel('Capacity (kWh)')
+axs[2].legend()
+
+plt.tight_layout()
+plt.show()
