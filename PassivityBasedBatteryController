@@ -1,0 +1,58 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Define time array
+time = np.arange(0, 24, 0.5)  # 24 hours, in half-hour intervals
+
+# System Parameters
+R = 1.0  # Battery Resistance (Ohms)
+C = 10.0  # Battery Capacity (Farads)
+
+# Passivity-based Controller Parameters
+alpha = 0.1  # Control gain
+beta = 0.2   # Feedback gain
+
+# Reference (Setpoint) for Battery State
+reference = np.zeros(len(time))  # Initially, set the reference to zero
+
+# Simulating Microgrid Data
+np.random.seed(0)
+generation = np.abs(np.sin(time) * 20 + np.random.normal(0, 3, len(time)))  # Simulate energy generation
+consumption = np.abs(np.cos(time) * 15 + np.random.normal(0, 2, len(time)))  # Simulate energy consumption
+
+# Initializing the System
+battery_state = np.zeros(len(time))  # Initial battery state
+
+# Passivity-based Control
+for i in range(1, len(time)):
+    delta_t = time[i] - time[i - 1]
+    
+    # Error Calculation
+    error = reference[i] - battery_state[i - 1]
+    
+    # Passivity-based Controller Calculation with Saturation
+    u = alpha * error - beta * battery_state[i - 1]
+    u = np.clip(u, -10, 10)  # Apply control input saturation
+    
+    # Update the Battery State
+    battery_state[i] = battery_state[i - 1] + (delta_t / (R * C)) * (u - consumption[i])
+
+# Create Plots
+fig, axs = plt.subplots(2, 1, figsize=(10, 6))
+
+# Generation, Consumption, and Battery State Plot
+axs[0].plot(time, generation, label='Generation (kWh)', color='green')
+axs[0].plot(time, consumption, label='Consumption (kWh)', color='red')
+axs[0].set_title('Energy Generation and Consumption')
+axs[0].set_ylabel('Energy (kWh)')
+axs[0].legend()
+
+axs[1].plot(time, battery_state, label='Battery State (kWh)', color='blue')
+axs[1].plot(time, reference, label='Reference (kWh)', linestyle='--', color='orange')
+axs[1].set_title('Battery State and Reference')
+axs[1].set_xlabel('Time (hours)')
+axs[1].set_ylabel('Capacity (kWh)')
+axs[1].legend()
+
+plt.tight_layout()
+plt.show()
